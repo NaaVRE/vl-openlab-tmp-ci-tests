@@ -18,6 +18,7 @@ dependencies:
   - r-secretsprovider
   - r-getpass
   - r-aws.s3
+  - numpy
   - pip:
     - SecretsProvider
   # user packages for this flavor
