@@ -1,7 +1,10 @@
 name: Binder tests
 on:
-  pull_request:
-    types: [opened, reopened]
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '**'
 
 jobs:
   binder:
