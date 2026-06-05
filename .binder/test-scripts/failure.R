@@ -1,3 +1,0 @@
-print('@ failure')
-
-library('nlaidtenaidte')
