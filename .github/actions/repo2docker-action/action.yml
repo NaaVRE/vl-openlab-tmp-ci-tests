@@ -1,7 +1,8 @@
 name: repo2docker-action
 description: repo2docker-action
 runs:
-  using:
+  using: composite
+  steps:
     - name: Set env
       run: |
         echo "USER_ID=1000" | tee -a $GITHUB_ENV
