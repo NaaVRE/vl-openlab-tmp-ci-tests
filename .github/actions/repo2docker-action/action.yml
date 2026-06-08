@@ -4,17 +4,23 @@ runs:
   using: composite
   steps:
     - name: Set env
+      shell: bash
       run: |
         echo "USER_ID=1000" | tee -a $GITHUB_ENV
         echo "NB_USER=1000" | tee -a $GITHUB_ENV
         echo "REPO_DIR=/home/${NB_USER}" | tee -a $GITHUB_ENV
         echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY}:${GITHUB_REF_NAME}" | tee -a $GITHUB_ENV
+
     - uses: docker/setup-buildx-action@v4
     - uses: actions/setup-python@v5
 
-    - run: |
+    - name: Install repo2docker
+      shell: bash
+      run: |
         pip install jupyter-repo2docker==2026.4.0
+
     - name: Build image
+      shell: bash
       run: |
         jupyter-repo2docker \
           --no-run \
@@ -28,10 +34,12 @@ runs:
           "${PWD}"
 
     - name: Push image
+      shell: bash
       run: |
         docker push ${IMAGE_NAME}
 
     - name: Run tests
+      shell: bash
       run: |
         set -e
 
