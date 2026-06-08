@@ -72,8 +72,6 @@ runs:
       if: steps.resolve.outputs.resolved == 'build_test_on_ci'
       uses: ./.github/actions/repo2docker-action
       with:
-        registry: ${{ inputs.registry}}
-        registry_username: ${{ inputs.registry_username }}
         registry_password: ${{ inputs.registry_password }}
 
     # - name: Build on binder

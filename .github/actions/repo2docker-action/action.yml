@@ -9,7 +9,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Set env
+    - name: Set environment
       shell: bash
       run: |
         echo "USER_ID=1000" | tee -a $GITHUB_ENV
@@ -17,15 +17,15 @@ runs:
         echo "REPO_DIR=/home/jovyan" | tee -a $GITHUB_ENV
         echo "IMAGE_NAME=ghcr.io/$(echo "${GITHUB_REPOSITORY}:${GITHUB_REF_NAME}" | tr '[:upper:]' '[:lower:]')" | tee -a $GITHUB_ENV
 
-    - uses: actions/setup-python@v5
-
     - name: Login to registry
       uses: docker/login-action@v3
-      if: ${{ inputs.registry_token != '' }}
+      if: ${{ inputs.registry_password != '' }}
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ inputs.registry_password }}
+
+    - uses: actions/setup-python@v5
 
     - name: Install repo2docker
       shell: bash
@@ -49,7 +49,7 @@ runs:
     # Push the image so that it can be used by jupyter-repo2docker --cache-from
     # on later builds.
     - name: Push image
-      if: ${{ inputs.registry_token != '' }}
+      if: ${{ inputs.registry_password != '' }}
       shell: bash
       run: |
         docker push ${IMAGE_NAME}
