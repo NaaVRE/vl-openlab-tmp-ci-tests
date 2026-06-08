@@ -64,14 +64,14 @@ runs:
 
     - name: Build and test in CI pipeline
       if: steps.resolve.outputs.resolved == 'build_test_on_ci'
-      uses: .github/actions/repo2docker-action
+      uses: ./.github/actions/repo2docker-action
 
-    - name: Build on binder
-      if: steps.resolve.outputs.resolved == 'build_on_binder'
-      uses: .github/actions/build-on-binder-action # TODO
-      with:
-        BINDER_URL: ${{ inputs.binder_url }}
-        BINDER_TOKEN: ${{ inputs.binder_token }}
+    # - name: Build on binder
+    #   if: steps.resolve.outputs.resolved == 'build_on_binder'
+    #   uses: ./.github/actions/build-on-binder-action # TODO
+    #   with:
+    #     BINDER_URL: ${{ inputs.binder_url }}
+    #     BINDER_TOKEN: ${{ inputs.binder_token }}
 
     - name: Show link to run on binder
       if: steps.resolve.outputs.resolved == 'show_link_to_binder'
