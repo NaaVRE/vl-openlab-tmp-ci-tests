@@ -9,7 +9,7 @@ runs:
         echo "USER_ID=1000" | tee -a $GITHUB_ENV
         echo "NB_USER=1000" | tee -a $GITHUB_ENV
         echo "REPO_DIR=/home/${NB_USER}" | tee -a $GITHUB_ENV
-        echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY}:${GITHUB_REF_NAME}" | tee -a $GITHUB_ENV
+        echo "IMAGE_NAME=ghcr.io/$(echo "${GITHUB_REPOSITORY}:${GITHUB_REF_NAME}" | tr '[:upper:]' '[:lower:]')" | tee -a $GITHUB_ENV
 
     - uses: actions/setup-python@v5
 
