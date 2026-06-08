@@ -7,8 +7,8 @@ runs:
       shell: bash
       run: |
         echo "USER_ID=1000" | tee -a $GITHUB_ENV
-        echo "NB_USER=1000" | tee -a $GITHUB_ENV
-        echo "REPO_DIR=/home/${NB_USER}" | tee -a $GITHUB_ENV
+        echo "NB_USER=jovyan" | tee -a $GITHUB_ENV
+        echo "REPO_DIR=/home/jovyan" | tee -a $GITHUB_ENV
         echo "IMAGE_NAME=ghcr.io/$(echo "${GITHUB_REPOSITORY}:${GITHUB_REF_NAME}" | tr '[:upper:]' '[:lower:]')" | tee -a $GITHUB_ENV
 
     - uses: actions/setup-python@v5
@@ -32,6 +32,8 @@ runs:
           --label "repo2docker.ref=${GITHUB_REF}" \
           "${PWD}"
 
+    # Push the image so that it can be used by jupyter-repo2docker --cache-from
+    # on later builds.
     - name: Push image
       shell: bash
       run: |
