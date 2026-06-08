@@ -22,6 +22,12 @@ inputs:
     required: false
     # Pass this via ${{ secrets.BINDER_TOKEN }} at the workflow level
 
+  registry_password:
+    description: >
+      Password for ghcr.io, used for caching docker images (set it to secrets.GITHUB_TOKEN in the workflow call).
+      If empty, caching will be disabled.
+    required: false
+
 runs:
   using: 'composite'
   steps:
@@ -65,6 +71,10 @@ runs:
     - name: Build and test in CI pipeline
       if: steps.resolve.outputs.resolved == 'build_test_on_ci'
       uses: ./.github/actions/repo2docker-action
+      with:
+        registry: ${{ inputs.registry}}
+        registry_username: ${{ inputs.registry_username }}
+        registry_password: ${{ inputs.registry_password }}
 
     # - name: Build on binder
     #   if: steps.resolve.outputs.resolved == 'build_on_binder'

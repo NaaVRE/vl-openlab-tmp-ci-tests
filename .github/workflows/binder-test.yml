@@ -6,6 +6,9 @@ on:
     tags-ignore:
       - '**'
 
+permissions:
+  packages: write
+
 jobs:
   binder:
     runs-on: ubuntu-latest
@@ -16,3 +19,4 @@ jobs:
       - uses: ./.github/actions/virtual-lab-action
         with:
           action: build_test_on_ci
+          registry_password: ${{ secrets.GITHUB_TOKEN }}
