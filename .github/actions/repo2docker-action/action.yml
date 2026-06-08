@@ -1,0 +1,106 @@
+name: repo2docker-action
+description: repo2docker-action
+runs:
+  using:
+    - name: Set env
+      run: |
+        echo "USER_ID=1000" | tee -a $GITHUB_ENV
+        echo "NB_USER=1000" | tee -a $GITHUB_ENV
+        echo "REPO_DIR=/home/${NB_USER}" | tee -a $GITHUB_ENV
+        echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY}:${GITHUB_REF_NAME}" | tee -a $GITHUB_ENV
+    - uses: docker/setup-buildx-action@v4
+    - uses: actions/setup-python@v5
+
+    - run: |
+        pip install jupyter-repo2docker==2026.4.0
+    - name: Build image
+      run: |
+        jupyter-repo2docker \
+          --no-run \
+          --user-id "${USER_ID}" \
+          --user-name "${NB_USER}"  \
+          --cache-from "${IMAGE_NAME}"  \
+          --target-repo-dir "${REPO_DIR}"  \
+          --image-name "${IMAGE_NAME}"  \
+          --label "repo2docker.repo=https://github.com/${GITHUB_REPOSITORY}" \
+          --label "repo2docker.ref=${GITHUB_REF}" \
+          "${PWD}"
+
+    - name: Push image
+      run: |
+        docker push ${IMAGE_NAME}
+
+    - name: Run tests
+      run: |
+        set -e
+
+        declare -a test_dirs=(
+          "binder/tests"
+          ".binder/tests"
+        )
+
+        for test_dir in "${test_dirs[@]}"; do
+          if [ -d "${PWD}/${test_dir}" ]; then
+            echo "::group::Run test scripts found in ${test_dir}/"
+            # We pass in bash that is run inside the built container, so watch out for quoting.
+            docker run -u ${USER_ID} -w ${REPO_DIR} \
+                ${IMAGE_NAME} /bin/bash -c '
+                tests_dir="'"${test_dir}"'"
+                failed=0
+
+                run_test() {
+                  cmd="$1"
+                  file="$2"
+                  echo -e "\nRunning ${file} with ${cmd}"
+                  ${cmd} "${file}"
+                  ret=$?
+                  if [ $ret -ne 0 ]; then
+                    echo "::error file=${file}::Test script failed: ${file}"
+                  fi
+                  return $ret
+                }
+
+                while IFS= read -r -d "" test_file; do
+                  run_test bash "${test_file}" || failed=1
+                done < <(find "${tests_dir}" -iname '\''*.sh'\'' -print0)
+
+                while IFS= read -r -d "" test_file; do
+                  run_test python "${test_file}" || failed=1
+                done < <(find "${tests_dir}" -iname '\''*.py'\'' -print0)
+
+                while IFS= read -r -d "" test_file; do
+                  run_test Rscript "${test_file}" || failed=1
+                done < <(find "${tests_dir}" -iname '\''*.R'\'' -print0)
+
+                while IFS= read -r -d "" test_file; do
+                  # set the kernel to the one installed by repo2docker based on the
+                  # notebook language
+                  kernel_language="$(jq -r .metadata.kernelspec.language "${test_file}")"
+                  case "$kernel_language" in
+                    "python")
+                      kernel_name="python3"
+                      ;;
+                    "R")
+                      kernel_name="ir"
+                      ;;
+                    "julia")
+                      # auto-detect julia kernel (julia-x.y)
+                      kernel_name="$(jupyter-kernelspec list | grep julia | awk '\''{print $1}'\'')"
+                      ;;
+                    *)
+                      echo "Unsupported language for ${test_file}: ${kernel_language}"
+                      exit 1
+                      ;;
+                  esac
+                  run_test "jupyter-execute --kernel_name=${kernel_name}" "${test_file}" || failed=1
+                done < <(find "${tests_dir}" -iname '\''*.ipynb'\'' -print0)
+
+                if [ $failed -ne 0 ]; then
+                  echo "::error::Some test scripts failed"
+                  exit 1
+                fi
+            '
+            echo "::endgroup::"
+            break
+          fi
+        done

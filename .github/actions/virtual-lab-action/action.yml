@@ -1,0 +1,153 @@
+name: 'NaaVRE Virtual Lab Action'
+description: >
+  Test or deploy a NaaVRE virtual lab repository
+
+inputs:
+  action:
+    description: >
+      Action to perform:
+        - build_test_on_ci: always run build_test_on_ci.sh
+        - build_on_binder: always run build_on_binder.sh
+        - show_link_to_binder: show a link to run on binder
+        - auto: choose automatically (default)
+    required: false
+    default: 'auto'
+
+  binder_url:
+    description: 'URL of the Binder instance.'
+    required: false
+
+  binder_token:
+    description: 'Authentication token for the Binder instance.'
+    required: false
+    # Pass this via ${{ secrets.BINDER_TOKEN }} at the workflow level
+
+runs:
+  using: 'composite'
+  steps:
+
+    - name: Resolve auto action
+      id: resolve
+      shell: bash
+      env:
+        INPUT_ACTION: ${{ inputs.action }}
+        GITHUB_EVENT_NAME: ${{ github.event_name }}
+        GITHUB_REF: ${{ github.ref }}
+      run: |
+        set -euo pipefail
+
+        resolved=""
+
+        if [[ "${INPUT_ACTION}" == "build_test_on_ci" ]]; then
+          resolved="build_test_on_ci"
+
+        elif [[ "${INPUT_ACTION}" == "build_on_binder" ]]; then
+          resolved="build_on_binder"
+
+        elif [[ "${INPUT_ACTION}" == "auto" ]]; then
+          if [[ "${GITHUB_EVENT_NAME}" == "release" ]]; then
+            resolved="build_on_binder"
+          elif [[ -d "binder/tests" || -d ".binder/tests" ]]; then
+            resolved="build_test_on_ci"
+          else
+            resolved="show_link_to_binder"
+          fi
+
+        else
+          echo "::error::Unknown action value '${INPUT_ACTION}'. Valid values: auto, build_test_on_ci, build_on_binder, or show_link_to_binder."
+          exit 1
+
+        fi
+
+        echo "resolved=${resolved}" >> "$GITHUB_OUTPUT"
+        echo "Resolved action: ${resolved}"
+
+    - name: Build and test in CI pipeline
+      if: steps.resolve.outputs.resolved == 'build_test_on_ci'
+      using: .github/actions/repo2docker-action
+
+    - name: Build on binder
+      if: steps.resolve.outputs.resolved == 'build_on_binder'
+      using: .github/actions/build-on-binder-action # TODO
+      with:
+        BINDER_URL: ${{ inputs.binder_url }}
+        BINDER_TOKEN: ${{ inputs.binder_token }}
+
+    - name: Show link to run on binder
+      if: steps.resolve.outputs.resolved == 'show_link_to_binder'
+      uses: actions/github-script@v7
+      env:
+        INPUT_BINDER_URL: ${{ inputs.binder_url }}
+      with:
+        script: |
+          const MARKER = '<!-- virtual-lab-action-binder-comment -->';
+          const BRANCH = context.ref.replace(/^refs\/heads\//, '');
+          const VIRTUAL_LAB_URL = `${process.env.INPUT_BINDER_URL}/v2/gh/${context.repo.owner}/${context.repo.repo}/${BRANCH}
+          const MESSAGE =
+            '> [!WARNING]\n' +
+            '> This virtual lab could not be tested automatically, because no test files were found.\n' +
+            '> * You can manually test this version of the virtual lab on NaaVRE: ${VIRTUAL_LAB_URL}\n' +
+            '> * You can enable automatic testing by adding files to `binder/tests` or `.binder/tests`. Supported extensions: `.py`, `.R`, `.sh` and `.ipynb`.';
+          const body = `${MARKER}\n${MESSAGE}`;
+
+          // Add the message to the action summary
+          core.notice(MESSAGE);
+          await core.summary.addRaw(MESSAGE).write();
+
+          // If the commit belongs to a PR, add the message as comment
+          if (!['pull_request', 'push'].includes(context.eventName)) return;
+
+          let prNumber;
+
+          if (context.eventName === 'pull_request') {
+            prNumber = context.payload.pull_request.number;
+
+          } else {
+            const { data: pullRequests } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              head: `${context.repo.owner}:${BRANCH}`,
+            });
+
+            if (pullRequests.length === 0) {
+              core.info(`No open PR found for branch '${BRANCH}' – skipping PR comment.`);
+              return;
+            }
+
+            // Use the latest PR if there are multiple
+            prNumber = pullRequests[0].number;
+          }
+
+          core.info(`Commenting on PR #${prNumber}`);
+
+          // Find an existing comment
+          const comments = await github.paginate(
+            github.rest.issues.listComments,
+            {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            }
+          );
+
+          const existing = comments.find(c => c.body.startsWith(MARKER));
+
+          // Create or update comment
+          if (existing) {
+            core.info(`Updating existing comment ${existing.id}`);
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: existing.id,
+              body,
+            });
+          } else {
+            core.info('Creating new comment');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body,
+            });
+          }
