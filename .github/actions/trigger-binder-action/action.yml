@@ -1,0 +1,19 @@
+name: trigger-binder-action
+description: trigger-binder-action
+
+inputs:
+  binder_url:
+    description: 'URL of the Binder instance.'
+    required: false
+
+  binder_token:
+    description: 'Authentication token for the Binder instance.'
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Set environment
+      shell: bash
+      run: |
+        trigger_binder.sh
