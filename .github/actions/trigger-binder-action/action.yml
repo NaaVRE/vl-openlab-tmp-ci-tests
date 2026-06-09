@@ -2,9 +2,9 @@ name: trigger-binder-action
 description: trigger-binder-action
 
 inputs:
-  binder_url:
-    description: 'URL of the Binder instance.'
-    required: false
+  binder_launch_url:
+    description: URL to launch the virtual lab on the Binder instance.
+    required: true
 
   binder_token:
     description: 'Authentication token for the Binder instance.'
