@@ -92,7 +92,7 @@ runs:
         script: |
           const MARKER = '<!-- virtual-lab-action-binder-comment -->';
           const BRANCH = context.ref.replace(/^refs\/heads\//, '');
-          const VIRTUAL_LAB_URL = `${process.env.INPUT_BINDER_URL}/v2/gh/${context.repo.owner}/${context.repo.repo}/${BRANCH}
+          const VIRTUAL_LAB_URL = `${process.env.INPUT_BINDER_URL}/v2/gh/${context.repo.owner}/${context.repo.repo}/${BRANCH}`;
           const MESSAGE =
             '> [!WARNING]\n' +
             '> This virtual lab could not be tested automatically, because no test files were found.\n' +
