@@ -117,12 +117,12 @@ runs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: 'open',
-              head: `${context.repo.owner}:${BRANCH}`,
+              head: `${BRANCH}`,
             });
             console.log(JSON.stringify(pullRequests));
 
             if (pullRequests.length === 0) {
-              core.info(`No open PR found for branch '${BRANCH}' – skipping PR comment.`);
+              core.info(`No open PR found for branch '${BRANCH}'. Skipping PR comment.`);
               return;
             }
 
