@@ -17,7 +17,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - uses: ./.github/actions/virtual-lab-action
+      - uses: naavre/virtual-lab-action@main
         with:
           registry_password: ${{ secrets.GITHUB_TOKEN }}
           binder_url: https://naavre-dev.minikube.test/binderhub
