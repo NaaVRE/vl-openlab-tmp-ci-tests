@@ -18,6 +18,7 @@ runs:
         script: |
           const MARKER = '<!-- virtual-lab-action-binder-comment -->';
           const BRANCH = context.ref.replace(/^refs\/heads\//, '');
+          const INPUT_BINDER_LAUNCH_URL = process.env.INPUT_BINDER_LAUNCH_URL;
           const MESSAGE =
             '> [!WARNING]\n' +
             '> This virtual lab could not be tested automatically, because no test files were found.\n' +
