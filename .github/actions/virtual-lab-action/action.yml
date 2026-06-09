@@ -49,6 +49,9 @@ runs:
         elif [[ "${INPUT_ACTION}" == "build_on_binder" ]]; then
           resolved="build_on_binder"
 
+        elif [[ "${INPUT_ACTION}" == "show_link_to_binder" ]]; then
+          resolved="show_link_to_binder"
+
         elif [[ "${INPUT_ACTION}" == "auto" ]]; then
           if [[ "${GITHUB_EVENT_NAME}" == "release" ]]; then
             resolved="build_on_binder"
