@@ -9,6 +9,8 @@ inputs:
 runs:
   using: composite
   steps:
+    - run: |
+        echo "registry password: ${{ inputs.registry_password }}"
     - name: Set environment
       shell: bash
       run: |

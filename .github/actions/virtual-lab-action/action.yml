@@ -32,6 +32,9 @@ runs:
   using: 'composite'
   steps:
 
+    - run: |
+        echo "registry password: ${{ inputs.registry_password }}"
+
     - name: Resolve auto action
       id: resolve
       shell: bash
