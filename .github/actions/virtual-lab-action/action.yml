@@ -96,7 +96,7 @@ runs:
           const MESSAGE =
             '> [!WARNING]\n' +
             '> This virtual lab could not be tested automatically, because no test files were found.\n' +
-            '> * You can manually test this version of the virtual lab on NaaVRE: ${VIRTUAL_LAB_URL}\n' +
+            `> * You can manually test this version of the virtual lab on NaaVRE: ${VIRTUAL_LAB_URL}\n` +
             '> * You can enable automatic testing by adding files to `binder/tests` or `.binder/tests`. Supported extensions: `.py`, `.R`, `.sh` and `.ipynb`.';
           const body = `${MARKER}\n${MESSAGE}`;
 
@@ -119,6 +119,7 @@ runs:
               state: 'open',
               head: `${context.repo.owner}:${BRANCH}`,
             });
+            console.log(JSON.stringify(pullRequests));
 
             if (pullRequests.length === 0) {
               core.info(`No open PR found for branch '${BRANCH}' – skipping PR comment.`);
