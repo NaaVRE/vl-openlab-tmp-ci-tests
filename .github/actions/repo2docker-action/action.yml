@@ -9,9 +9,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - shell: bash
-      run: |
-        echo "registry password: ${{ inputs.registry_password }}"
     - name: Set environment
       shell: bash
       run: |
@@ -35,19 +32,25 @@ runs:
       run: |
         pip install jupyter-repo2docker==2026.4.0
 
-    - name: Build image
-      shell: bash
+    - shell:
       run: |
-        jupyter-repo2docker \
-          --no-run \
-          --user-id "${USER_ID}" \
-          --user-name "${NB_USER}"  \
-          ${{ inputs.registry_password != '' && format('--cache-from "{0}"', env.IMAGE_NAME) || '' }} \
-          --target-repo-dir "${REPO_DIR}"  \
-          --image-name "${IMAGE_NAME}"  \
-          --label "repo2docker.repo=https://github.com/${GITHUB_REPOSITORY}" \
-          --label "repo2docker.ref=${GITHUB_REF}" \
-          "${PWD}"
+        echo ${PWD}
+        ls -lah
+        ls -lah "${PWD}.binder/tests"
+
+    # - name: Build image
+    #   shell: bash
+    #   run: |
+    #     jupyter-repo2docker \
+    #       --no-run \
+    #       --user-id "${USER_ID}" \
+    #       --user-name "${NB_USER}"  \
+    #       ${{ inputs.registry_password != '' && format('--cache-from "{0}"', env.IMAGE_NAME) || '' }} \
+    #       --target-repo-dir "${REPO_DIR}"  \
+    #       --image-name "${IMAGE_NAME}"  \
+    #       --label "repo2docker.repo=https://github.com/${GITHUB_REPOSITORY}" \
+    #       --label "repo2docker.ref=${GITHUB_REF}" \
+    #       "${PWD}"
 
     # Push the image so that it can be used by jupyter-repo2docker --cache-from
     # on later builds.
@@ -129,6 +132,5 @@ runs:
                 fi
             '
             echo "::endgroup::"
-            break
           fi
         done
