@@ -15,5 +15,9 @@ runs:
   steps:
     - name: Set environment
       shell: bash
+      env:
+        INPUT_BINDER_LAUNCH_URL: ${{ inputs.binder_launch_url }}
+        INPUT_TOKEN: ${{ inputs.binder_token }}
+      # TODO: authentication
       run: |
-        trigger_binder.sh
+        bash trigger_binder.sh "${INPUT_BINDER_LAUNCH_URL}"
