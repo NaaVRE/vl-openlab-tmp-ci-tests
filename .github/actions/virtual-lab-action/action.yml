@@ -119,7 +119,6 @@ runs:
               state: 'open',
               head: `${BRANCH}`,
             });
-            console.log(JSON.stringify(pullRequests));
 
             if (pullRequests.length === 0) {
               core.info(`No open PR found for branch '${BRANCH}'. Skipping PR comment.`);
