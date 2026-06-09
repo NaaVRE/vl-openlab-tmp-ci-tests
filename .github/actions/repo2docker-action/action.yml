@@ -32,25 +32,19 @@ runs:
       run: |
         pip install jupyter-repo2docker==2026.4.0
 
-    - shell:
+    - name: Build image
+      shell: bash
       run: |
-        echo ${PWD}
-        ls -lah
-        ls -lah "${PWD}/.binder/tests"
-
-    # - name: Build image
-    #   shell: bash
-    #   run: |
-    #     jupyter-repo2docker \
-    #       --no-run \
-    #       --user-id "${USER_ID}" \
-    #       --user-name "${NB_USER}"  \
-    #       ${{ inputs.registry_password != '' && format('--cache-from "{0}"', env.IMAGE_NAME) || '' }} \
-    #       --target-repo-dir "${REPO_DIR}"  \
-    #       --image-name "${IMAGE_NAME}"  \
-    #       --label "repo2docker.repo=https://github.com/${GITHUB_REPOSITORY}" \
-    #       --label "repo2docker.ref=${GITHUB_REF}" \
-    #       "${PWD}"
+        jupyter-repo2docker \
+          --no-run \
+          --user-id "${USER_ID}" \
+          --user-name "${NB_USER}"  \
+          ${{ inputs.registry_password != '' && format('--cache-from "{0}"', env.IMAGE_NAME) || '' }} \
+          --target-repo-dir "${REPO_DIR}"  \
+          --image-name "${IMAGE_NAME}"  \
+          --label "repo2docker.repo=https://github.com/${GITHUB_REPOSITORY}" \
+          --label "repo2docker.ref=${GITHUB_REF}" \
+          "${PWD}"
 
     # Push the image so that it can be used by jupyter-repo2docker --cache-from
     # on later builds.
