@@ -21,3 +21,4 @@ jobs:
         with:
           action: show_link_to_binder
           registry_password: ${{ secrets.GITHUB_TOKEN }}
+          binder_url: https://naavre-dev.minikube.test/binderhub
