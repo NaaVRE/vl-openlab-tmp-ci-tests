@@ -36,7 +36,7 @@ runs:
       run: |
         echo ${PWD}
         ls -lah
-        ls -lah "${PWD}.binder/tests"
+        ls -lah "${PWD}/.binder/tests"
 
     # - name: Build image
     #   shell: bash
