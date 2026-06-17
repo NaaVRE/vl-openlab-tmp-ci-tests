@@ -6,6 +6,10 @@ on:
     tags-ignore:
       - '**'
 
+permissions:
+  packages: write
+  pull-requests: write
+
 jobs:
   binder:
     runs-on: ubuntu-latest
@@ -13,22 +17,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Build and test
-        uses: jupyterhub/repo2docker-action@master
+      - uses: NaaVRE/virtual-lab-action@main
         with:
-          NO_PUSH: true
-
-      - name: Comment on PR with Binder link
-        uses: actions/github-script@v1
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            var BRANCH_NAME = process.env.BRANCH_NAME;
-            github.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `[![Binder](https://img.shields.io/badge/launch-naavre-3c8f49.svg?style=for-the-badge&logo=data:image/svg%2bxml;base64,PHN2ZyB3aWR0aD0iMTI0bW0iIGhlaWdodD0iODcuNG1tIiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCAxMjQgODcuNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+PHBhdGggaWQ9ImIiIGQ9Im03NS43IDIuMmUtNGMtOS4wNy0wLjAzNy0xOC4yIDQuNTEtMjMuNiAxMy4zLTQuNDQtMC40MDItOS4xOSAwLjY1MS0xMy4zIDMuMTUtMC4yLTAuMDYzLTAuMzg2LTAuMTQtMC41OTMtMC4xOTUtNC4xNi0xLjExLTkuNTUtMS4wNS0xOC45LTEuMDVoLTE5LjN2NjZoMTkuM2M5LjMgMCAxNC42IDAuMDk1OCAxNy42IDAuODg3IDIuOTcgMC43OTEgMy45MyAxLjg2IDUuOTYgNS4zN2g0LjMzYzIuMDMtMy41MSAyLjk5LTQuNTggNS45Ni01LjM3IDIuOTctMC43OTEgOC4yNy0wLjg4NyAxNy42LTAuODg3aDE5LjN2LTM5LjRjMi4yMS0wLjk2NSAzLjc1LTMuMTcgMy43NS01LjczIDAtMy40NS0yLjgtNi4yNS02LjI1LTYuMjVzLTYuMjUgMi44LTYuMjUgNi4yNWMwIDIuNTEgMS41NCA0LjczIDMuNzUgNS43MnYzNC40aC0xNC4zYy05LjMxIDAtMTQuNy0wLjA1MjItMTguOSAxLjA1LTEuNjggMC40NDgtMy4wOSAxLjE3LTQuMzMgMi4xMnYtMzAuMWMyLjIxLTAuOTY1IDMuNzUtMy4xNyAzLjc1LTUuNzMgMC0zLjQ1LTIuOC02LjI1LTYuMjUtNi4yNS0zLjQ1IDAtNi4yNSAyLjgtNi4yNSA2LjI1IDAgMi41MSAxLjU0IDQuNzMgMy43NSA1LjcydjMwLjFjLTEuMjQtMC45NTItMi42NS0xLjY4LTQuMzMtMi4xMy00LjE2LTEuMTEtOS41NS0xLjA1LTE4LjktMS4wNWgtMTQuM3YtNTZoMTQuM2M2LjczIDAgMTEuMyAwLjA1MzIgMTQuNSAwLjM4LTEuNDcgMS42Ny0yLjc0IDMuNjEtMy43MSA1Ljg1LTcuMzIgMC4yOTQtMTUgNi4xMi0xNSAxNS42IDFlLTQgOC42MiA2LjkyIDE1LjcgMTUuNSAxNS43aDguNzR2LTYuNzVjLTEuODctMS40NS0zLjE5LTMuNTktMy42LTUuOTMtMS4xNC01LjI4IDMuNDgtMTEgOC45Mi0xMSAyLjU3LTAuMDk5NyA1LjE1IDAuOTM1IDYuOTcgMi43MyAyLjA4IDEuODkgMy4wNiA0Ljg1IDIuNzIgNy42NC0wLjI1IDIuNTEtMS41NCA1LjA1LTMuNjYgNi41OXY2LjcxaDMxLjJ2LTE0LjNjLTEuODMtMS40My0zLjE1LTMuNTItMy41OC01LjgxLTEuMjMtNS4zNiAzLjQyLTExLjEgOC44OS0xMS4xIDIuODMtMC4xMDQgNS42NSAxLjE1IDcuNSAzLjI5IDMuNTggMy44IDIuNzUgMTAuNi0xLjQ2IDEzLjd2MTQuMmg4LjYyYzEyLjEgMCAyMS45LTEwLjEgMjEuOS0yMi4zIDAtMTQuNS0xMi44LTIzLjYtMjQuNy0yMi01LjM3LTguODUtMTQuNC0xMy41LTIzLjUtMTMuNXoiIGZpbGw9IiNmZmYiLz48L3N2Zz4K)](https://naavre-dev.minikube.test/binderhub/v2/gh/${context.repo.owner}/${context.repo.repo}/${BRANCH_NAME}) Launch a NaaVRE lab on this branch`
-            })
-        env:
-          BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
+          registry_password: ${{ secrets.GITHUB_TOKEN }}
+          binder_url: https://naavre-dev.minikube.test/binderhub
