@@ -20,7 +20,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - uses: NaaVRE/virtual-lab-action@show-tests-info-message
+      - uses: NaaVRE/virtual-lab-action@main
         with:
           registry_password: ${{ secrets.GITHUB_TOKEN }}
           naavre_build_token: ${{ secrets.NAAVRE_BUILD_TOKEN }}
